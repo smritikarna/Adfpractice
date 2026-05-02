@@ -1,0 +1,33 @@
+{
+	"name": "DS_ADLS_JSON_PRICING_META_DATA_FILES_LAB3",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS_LANDING",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Working-Labs"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "metadata-daily-pricing-lab3b.json",
+				"fileSystem": "adf-metadata"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"Relative_URL_file_name": {
+					"type": "string"
+				},
+				"sink_file_name": {
+					"type": "string"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

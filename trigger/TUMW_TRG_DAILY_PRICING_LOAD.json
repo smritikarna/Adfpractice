@@ -1,0 +1,36 @@
+{
+	"name": "TUMW_TRG_DAILY_PRICING_LOAD",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipeline": {
+			"pipelineReference": {
+				"referenceName": "PL_ingest_daily_pricing_data_lab3a",
+				"type": "PipelineReference"
+			},
+			"parameters": {
+				"pln_prm_sink_container_name": "landing",
+				"pln_prm_sink_folder_name": "/labs/lab3/",
+				"pln_prm_sink_file_name": "PW_MW_DR_",
+				"pln_prm_Relative_URL_folder_name": "/labs/lab3/",
+				"pln_prm_Relative_URL_file_name": "PW_MW_DR_",
+				"pln_prm_Relative_URL_file_date": "@trigger().outputs.windowStartTime",
+				"pln_prm_Relative_URL_file_type": ".csv",
+				"pln_prm_sink_file_type": ".csv"
+			}
+		},
+		"type": "TumblingWindowTrigger",
+		"typeProperties": {
+			"frequency": "Hour",
+			"interval": 24,
+			"startTime": "2023-01-01T00:00:00Z",
+			"endTime": "2023-01-03T00:00:00Z",
+			"delay": "00:00:00",
+			"maxConcurrency": 1,
+			"retryPolicy": {
+				"intervalInSeconds": 30
+			},
+			"dependsOn": []
+		}
+	}
+}

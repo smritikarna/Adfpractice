@@ -1,0 +1,29 @@
+{
+	"name": "TW_TRG_DAILY_PRICING_LOAD",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipeline": {
+			"pipelineReference": {
+				"referenceName": "PL_ingest_daily_pricing_data",
+				"type": "PipelineReference"
+			},
+			"parameters": {
+				"pln_prm_source_file_date": "@trigger().outputs.windowStartTime"
+			}
+		},
+		"type": "TumblingWindowTrigger",
+		"typeProperties": {
+			"frequency": "Hour",
+			"interval": 24,
+			"startTime": "2023-01-01T00:00:00Z",
+			"endTime": "2023-01-10T00:00:00Z",
+			"delay": "00:00:00",
+			"maxConcurrency": 2,
+			"retryPolicy": {
+				"intervalInSeconds": 30
+			},
+			"dependsOn": []
+		}
+	}
+}

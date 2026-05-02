@@ -1,0 +1,42 @@
+{
+	"name": "DS_ASQL_REPORT_DIM_VARIETY",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ASQL_REPORTING_DB",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Transform"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "VARIETY",
+				"type": "varchar"
+			},
+			{
+				"name": "VARIETY_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "DWH_CREATED_DATE",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "DWH_UPDATED_DATE",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			}
+		],
+		"typeProperties": {
+			"schema": "REPORTING",
+			"table": "DIM_VARIETY"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

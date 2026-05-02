@@ -1,0 +1,22 @@
+{
+	"name": "DS_ADLS_DAILY_PRICING_DATA_lab2",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS_LANDING",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Working-Labs"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileSystem": "landing"
+			}
+		},
+		"schema": {}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

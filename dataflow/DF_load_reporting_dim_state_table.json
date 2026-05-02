@@ -1,0 +1,161 @@
+{
+	"name": "DF_load_reporting_dim_state_table",
+	"properties": {
+		"folder": {
+			"name": "Transform"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DS_ADLS_DAILY_PRICING_LANDING_SOURCE",
+						"type": "DatasetReference"
+					},
+					"name": "sourcereaddailypricingdata"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_REPORT_DIM_TABLES_SOURCE",
+						"type": "DatasetReference"
+					},
+					"name": "sourcedimlookup"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_REPORT_DIM_TABLES_SOURCE",
+						"type": "DatasetReference"
+					},
+					"name": "sourcegetmaxskvalue"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_REPORT_DIM_STATE",
+						"type": "DatasetReference"
+					},
+					"name": "sinkdimensiontables"
+				}
+			],
+			"transformations": [
+				{
+					"name": "selectdimcolumnvalue"
+				},
+				{
+					"name": "aggregatefinduniquesourcevalues"
+				},
+				{
+					"name": "lookupdimtable"
+				},
+				{
+					"name": "filternewsourcevalues"
+				},
+				{
+					"name": "joinmaxsurrogatekey"
+				},
+				{
+					"name": "selectmapdimcolumns"
+				},
+				{
+					"name": "surrogateKeygeeratenewId"
+				},
+				{
+					"name": "derivedColumnnewkeyandauditcolumns"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     dfl_prm_reporting_schema_name as string,",
+				"     dfl_prm_reporting_table_name as string,",
+				"     dfl_prm_reporting_lookup_column_name as string,",
+				"     dfl_prm_reporting_table_id_column as string",
+				"}",
+				"source(output(",
+				"          DATE_OF_PRICING as string,",
+				"          ROW_ID as string,",
+				"          STATE_NAME as string,",
+				"          MARKET_NAME as string,",
+				"          PRODUCTGROUP_NAME as string,",
+				"          PRODUCT_NAME as string,",
+				"          VARIETY as string,",
+				"          ORIGIN as string,",
+				"          ARRIVAL_IN_TONNES as string,",
+				"          MINIMUM_PRICE as string,",
+				"          MAXIMUM_PRICE as string,",
+				"          MODAL_PRICE as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourcereaddailypricingdata",
+				"source(output(",
+				"          DIM_LOOKUP_VALUE as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: ( concat('SELECT ' , $dfl_prm_reporting_lookup_column_name , ' as DIM_LOOKUP_VALUE FROM ' , $dfl_prm_reporting_schema_name, '.' ,$dfl_prm_reporting_table_name )),",
+				"     format: 'query') ~> sourcedimlookup",
+				"source(output(",
+				"          MAX_SURROGATE_KEY_ID as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: (concat('SELECT COALESCE(MAX(' , $dfl_prm_reporting_table_id_column , '),0) as MAX_SURROGATE_KEY_ID  FROM ' , $dfl_prm_reporting_schema_name , '.' , $dfl_prm_reporting_table_name)),",
+				"     format: 'query') ~> sourcegetmaxskvalue",
+				"sourcereaddailypricingdata select(mapColumn(",
+				"          SOURCE_FILE_DIM_COLUMN = STATE_NAME",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectdimcolumnvalue",
+				"selectdimcolumnvalue aggregate(groupBy(SOURCE_FILE_DIM_COLUMN),",
+				"     count_source_file_dim_column = count(SOURCE_FILE_DIM_COLUMN)) ~> aggregatefinduniquesourcevalues",
+				"aggregatefinduniquesourcevalues, sourcedimlookup lookup(SOURCE_FILE_DIM_COLUMN == DIM_LOOKUP_VALUE,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookupdimtable",
+				"lookupdimtable filter(isNull(DIM_LOOKUP_VALUE)) ~> filternewsourcevalues",
+				"filternewsourcevalues, sourcegetmaxskvalue join(! (isNull(SOURCE_FILE_DIM_COLUMN) && isNull(MAX_SURROGATE_KEY_ID)),",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinmaxsurrogatekey",
+				"joinmaxsurrogatekey select(mapColumn(",
+				"          SOURCE_FILE_DIM_COLUMN,",
+				"          MAX_SURROGATE_KEY_ID",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectmapdimcolumns",
+				"selectmapdimcolumns keyGenerate(output(SURROGATE_KEY_ID as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKeygeeratenewId",
+				"surrogateKeygeeratenewId derive(NEW_SURROGATE_KEY = MAX_SURROGATE_KEY_ID + SURROGATE_KEY_ID,",
+				"          DWH_CREATED_DATE = currentDate(),",
+				"          DWH_UPDATED_DATE = currentDate()) ~> derivedColumnnewkeyandauditcolumns",
+				"derivedColumnnewkeyandauditcolumns sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          STATE_NAME as string,",
+				"          STATE_ID as integer,",
+				"          DWH_CREATED_DATE as timestamp,",
+				"          DWH_UPDATED_DATE as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          STATE_NAME = SOURCE_FILE_DIM_COLUMN,",
+				"          STATE_ID = NEW_SURROGATE_KEY,",
+				"          DWH_CREATED_DATE,",
+				"          DWH_UPDATED_DATE",
+				"     )) ~> sinkdimensiontables"
+			]
+		}
+	}
+}

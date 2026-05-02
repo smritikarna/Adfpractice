@@ -1,0 +1,16 @@
+{
+	"name": "DS_ASQL_REPORT_DIM_TABLES_SOURCE",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ASQL_REPORTING_DB",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Transform"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

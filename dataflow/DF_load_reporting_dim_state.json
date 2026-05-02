@@ -1,0 +1,161 @@
+{
+	"name": "DF_load_reporting_dim_state",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DS_ADLS_DAILY_PRICING_LANDING_SOURCE_lab4",
+						"type": "DatasetReference"
+					},
+					"name": "sourcereaddailypricing"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_REPORT_DIM_STATE_SOURCE_lab4",
+						"type": "DatasetReference"
+					},
+					"name": "sourcedimstatelookup"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_REPORT_DIM_STATE_SOURCE_SK_lab4",
+						"type": "DatasetReference"
+					},
+					"name": "sourcemaxstateid"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_REPORT_DIM_STATE_lab4",
+						"type": "DatasetReference"
+					},
+					"name": "sinkdimstate"
+				}
+			],
+			"transformations": [
+				{
+					"name": "selectstatename"
+				},
+				{
+					"name": "aggregatecount"
+				},
+				{
+					"name": "selectuniquestatename"
+				},
+				{
+					"name": "surrogateKeygeneratestateid"
+				},
+				{
+					"name": "derivedColumnauditcolumns"
+				},
+				{
+					"name": "selectdimstatelookup"
+				},
+				{
+					"name": "lookupstatename"
+				},
+				{
+					"name": "filternewstatename"
+				},
+				{
+					"name": "joinMAXSTATEID"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          DATE_OF_PRICING as string,",
+				"          ROW_ID as string,",
+				"          STATE_NAME as string,",
+				"          MARKET_NAME as string,",
+				"          PRODUCTGROUP_NAME as string,",
+				"          PRODUCT_NAME as string,",
+				"          VARIETY as string,",
+				"          ORIGIN as string,",
+				"          ARRIVAL_IN_TONNES as string,",
+				"          MINIMUM_PRICE as string,",
+				"          MAXIMUM_PRICE as string,",
+				"          MODAL_PRICE as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourcereaddailypricing",
+				"source(output(",
+				"          STATE_NAME as string,",
+				"          STATE_ID as integer,",
+				"          DWH_CREATED_DATE as timestamp,",
+				"          DWH_UPDATED_DATE as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> sourcedimstatelookup",
+				"source(output(",
+				"          MAX_STATE_ID as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT MAX(STATE_ID) AS MAX_STATE_ID FROM [REPORTING].[DIM_STATE]',",
+				"     format: 'query') ~> sourcemaxstateid",
+				"sourcereaddailypricing select(mapColumn(",
+				"          STATE_NAME",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectstatename",
+				"selectstatename aggregate(groupBy(STATE_NAME),",
+				"     COUNT_STATE_NAME = count(STATE_NAME)) ~> aggregatecount",
+				"aggregatecount select(mapColumn(",
+				"          STATE_NAME",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectuniquestatename",
+				"joinMAXSTATEID keyGenerate(output(STATE_ID as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKeygeneratestateid",
+				"surrogateKeygeneratestateid derive({DWH_CREATED_DATE     DATETIME} = currentDate(),",
+				"          {DWH_UPDATED_DATE     DATETIME} = currentDate(),",
+				"          NEW_STATE_ID = MAX_STATE_ID + STATE_ID) ~> derivedColumnauditcolumns",
+				"sourcedimstatelookup select(mapColumn(",
+				"          LOOKUP_STATE_NAME = STATE_NAME",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectdimstatelookup",
+				"selectuniquestatename, selectdimstatelookup lookup(STATE_NAME == LOOKUP_STATE_NAME,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookupstatename",
+				"lookupstatename filter(isNull(LOOKUP_STATE_NAME)) ~> filternewstatename",
+				"filternewstatename, sourcemaxstateid join(!(isNull(STATE_NAME) && isNull(MAX_STATE_ID)),",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinMAXSTATEID",
+				"derivedColumnauditcolumns sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          STATE_NAME as string,",
+				"          STATE_ID as integer,",
+				"          DWH_CREATED_DATE as timestamp,",
+				"          DWH_UPDATED_DATE as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          STATE_NAME,",
+				"          STATE_ID = NEW_STATE_ID,",
+				"          DWH_CREATED_DATE = {DWH_CREATED_DATE     DATETIME},",
+				"          DWH_UPDATED_DATE = {DWH_UPDATED_DATE     DATETIME}",
+				"     )) ~> sinkdimstate"
+			]
+		}
+	}
+}

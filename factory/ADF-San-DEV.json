@@ -1,0 +1,15 @@
+{
+	"name": "ADF-San-DEV",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Enabled",
+			"editable": true
+		}
+	},
+	"location": "uksouth",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "03c35b8c-ae60-4c77-8841-51f894b3a956",
+		"tenantId": "bebbbe75-789c-4898-a7cc-7ba6256b574d"
+	}
+}

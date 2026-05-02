@@ -1,0 +1,37 @@
+{
+	"name": "PL_load_reporting_dim_table_lab4",
+	"properties": {
+		"activities": [
+			{
+				"name": "DF_load_reporting_dim_state_lab4",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_load_reporting_dim_state",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"folder": {
+			"name": "Working-Labs"
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-01-10T18:07:43Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

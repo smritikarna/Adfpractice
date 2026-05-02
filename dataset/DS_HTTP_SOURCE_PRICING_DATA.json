@@ -1,0 +1,34 @@
+{
+	"name": "DS_HTTP_SOURCE_PRICING_DATA",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_HTTP_SOURCE",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"dst_prm_Relative_URL": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "Ingest"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "HttpServerLocation",
+				"relativeUrl": {
+					"value": "@dataset().dst_prm_Relative_URL",
+					"type": "Expression"
+				}
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

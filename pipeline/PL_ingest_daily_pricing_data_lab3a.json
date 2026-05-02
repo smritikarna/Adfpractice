@@ -1,0 +1,152 @@
+{
+	"name": "PL_ingest_daily_pricing_data_lab3a",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy data Pricing",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Set variable Relative URL File date",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "HttpReadSettings",
+							"requestMethod": "GET"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_HTTP_SOURCE_PRICING_DATA_lab3",
+						"type": "DatasetReference",
+						"parameters": {
+							"dst_prm_Relative_URL": {
+								"value": "@concat(pipeline().parameters.pln_prm_Relative_URL_folder_name,pipeline().parameters.pln_prm_Relative_URL_file_name,\nvariables('pln_var_Relative_URL_file_date'),pipeline().parameters.pln_prm_Relative_URL_file_type)",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_ADLS_DAILY_PRICING_DATA_lab3",
+						"type": "DatasetReference",
+						"parameters": {
+							"dst_prm_sink_container_name": {
+								"value": "@pipeline().parameters.pln_prm_sink_container_name",
+								"type": "Expression"
+							},
+							"dst_prm_sink_folder_name": {
+								"value": "@pipeline().parameters.pln_prm_sink_folder_name",
+								"type": "Expression"
+							},
+							"dst_prm_sink_file_name": {
+								"value": "@concat(pipeline().parameters.pln_prm_sink_file_name,\nvariables('pln_var_Relative_URL_file_date'),\npipeline().parameters.pln_prm_sink_file_type)",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "Set variable Relative URL File date",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "pln_var_Relative_URL_file_date",
+					"value": {
+						"value": "@formatDateTime(pipeline().parameters.pln_prm_Relative_URL_file_date,'MMddyyyy')",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"pln_prm_sink_container_name": {
+				"type": "string",
+				"defaultValue": "landing"
+			},
+			"pln_prm_sink_folder_name": {
+				"type": "string",
+				"defaultValue": "/labs/lab3/"
+			},
+			"pln_prm_sink_file_name": {
+				"type": "string",
+				"defaultValue": "PW_MW_DR_"
+			},
+			"pln_prm_Relative_URL_folder_name": {
+				"type": "string",
+				"defaultValue": "/labs/lab3/"
+			},
+			"pln_prm_Relative_URL_file_name": {
+				"type": "string",
+				"defaultValue": "PW_MW_DR_"
+			},
+			"pln_prm_Relative_URL_file_date": {
+				"type": "string"
+			},
+			"pln_prm_Relative_URL_file_type": {
+				"type": "string",
+				"defaultValue": ".csv"
+			},
+			"pln_prm_sink_file_type": {
+				"type": "string",
+				"defaultValue": ".csv"
+			}
+		},
+		"variables": {
+			"pln_var_Relative_URL_file_date": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Working-Labs"
+		},
+		"annotations": [],
+		"lastPublishTime": "2025-12-18T17:13:49Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
