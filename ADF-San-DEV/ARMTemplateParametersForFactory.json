@@ -1,0 +1,60 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "ADF-San-DEV"
+		},
+		"LS_ADLS_LANDING_accountKey": {
+			"value": ""
+		},
+		"LS_ASQL_REPORTING_DB_password": {
+			"value": ""
+		},
+		"ls_aarblobefn_connectionString": {
+			"value": ""
+		},
+		"LS_ADLS_LANDING_properties_typeProperties_url": {
+			"value": "https://adlssandev.dfs.core.windows.net/"
+		},
+		"LS_ASQL_REPORTING_DB_properties_typeProperties_server": {
+			"value": "sql-reporting-daily-pricing-database-dev.database.windows.net"
+		},
+		"LS_ASQL_REPORTING_DB_properties_typeProperties_database": {
+			"value": "asql_reporting_daily_pricing_database_dev"
+		},
+		"LS_ASQL_REPORTING_DB_properties_typeProperties_userName": {
+			"value": "clouddbadmin"
+		},
+		"LS_HTTP_SOURCE_properties_typeProperties_url": {
+			"value": "https://retailpricing.blob.core.windows.net "
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_container_name": {
+			"value": "landing"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_folder_name": {
+			"value": "/labs/lab3/"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_file_name": {
+			"value": "PW_MW_DR_"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_folder_name": {
+			"value": "/labs/lab3/"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_file_name": {
+			"value": "PW_MW_DR_"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_file_date": {
+			"value": "@trigger().outputs.windowStartTime"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_file_type": {
+			"value": ".csv"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_file_type": {
+			"value": ".csv"
+		},
+		"TW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_source_file_date": {
+			"value": "@trigger().outputs.windowStartTime"
+		}
+	}
+}

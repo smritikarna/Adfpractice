@@ -1,0 +1,893 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "ADF-San-DEV"
+		},
+		"LS_ADLS_LANDING_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'LS_ADLS_LANDING'"
+		},
+		"LS_ASQL_REPORTING_DB_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LS_ASQL_REPORTING_DB'"
+		},
+		"ls_aarblobefn_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ls_aarblobefn'"
+		},
+		"LS_ADLS_LANDING_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://adlssandev.dfs.core.windows.net/"
+		},
+		"LS_ASQL_REPORTING_DB_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "sql-reporting-daily-pricing-database-dev.database.windows.net"
+		},
+		"LS_ASQL_REPORTING_DB_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "asql_reporting_daily_pricing_database_dev"
+		},
+		"LS_ASQL_REPORTING_DB_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "clouddbadmin"
+		},
+		"LS_HTTP_SOURCE_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://retailpricing.blob.core.windows.net "
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_ADLS_LANDING')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('LS_ADLS_LANDING_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('LS_ADLS_LANDING_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_ASQL_REPORTING_DB')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('LS_ASQL_REPORTING_DB_properties_typeProperties_server')]",
+					"database": "[parameters('LS_ASQL_REPORTING_DB_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": true,
+					"authenticationType": "SQL",
+					"userName": "[parameters('LS_ASQL_REPORTING_DB_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('LS_ASQL_REPORTING_DB_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_HTTP_SOURCE')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "HttpServer",
+				"typeProperties": {
+					"url": "[parameters('LS_HTTP_SOURCE_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_aarblobefn')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('ls_aarblobefn_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ADLS_DAILY_PRICING_DATA')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ADLS_LANDING",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"dst_prm_sink_container_name": {
+						"type": "string"
+					},
+					"dst_prm_sink_folder_name": {
+						"type": "string"
+					},
+					"dst_prm_sink_file_name": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Ingest"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().dst_prm_sink_file_name",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().dst_prm_sink_folder_name",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().dst_prm_sink_container_name",
+							"type": "Expression"
+						}
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS_LANDING')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ADLS_DAILY_PRICING_DATA_lab1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ADLS_LANDING",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Working-Labs"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileSystem": "landing"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS_LANDING')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ADLS_DAILY_PRICING_DATA_lab2')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ADLS_LANDING",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Working-Labs"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileSystem": "landing"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS_LANDING')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ADLS_DAILY_PRICING_DATA_lab3')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ADLS_LANDING",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"dst_prm_sink_container_name": {
+						"type": "String"
+					},
+					"dst_prm_sink_folder_name": {
+						"type": "string"
+					},
+					"dst_prm_sink_file_name": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Working-Labs"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().dst_prm_sink_file_name",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().dst_prm_sink_folder_name",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().dst_prm_sink_container_name",
+							"type": "Expression"
+						}
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS_LANDING')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ADLS_DAILY_PRICING_LANDING_SOURCE')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ADLS_LANDING",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"dst_prm_landing_container_name": {
+						"type": "string"
+					},
+					"dst_prm_landing_folder_name": {
+						"type": "string"
+					},
+					"dst_prm_landing_file_name": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Transform"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().dst_prm_landing_file_name",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().dst_prm_landing_folder_name",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().dst_prm_landing_container_name",
+							"type": "Expression"
+						}
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "DATE_OF_PRICING",
+						"type": "String"
+					},
+					{
+						"name": "ROW_ID",
+						"type": "String"
+					},
+					{
+						"name": "STATE_NAME",
+						"type": "String"
+					},
+					{
+						"name": "MARKET_NAME",
+						"type": "String"
+					},
+					{
+						"name": "PRODUCTGROUP_NAME",
+						"type": "String"
+					},
+					{
+						"name": "PRODUCT_NAME",
+						"type": "String"
+					},
+					{
+						"name": "VARIETY",
+						"type": "String"
+					},
+					{
+						"name": "ORIGIN",
+						"type": "String"
+					},
+					{
+						"name": "ARRIVAL_IN_TONNES",
+						"type": "String"
+					},
+					{
+						"name": "MINIMUM_PRICE",
+						"type": "String"
+					},
+					{
+						"name": "MAXIMUM_PRICE",
+						"type": "String"
+					},
+					{
+						"name": "MODAL_PRICE",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS_LANDING')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ADLS_DAILY_PRICING_LANDING_SOURCE_lab4')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ADLS_LANDING",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Working-Labs"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "PW_MW_DR_01022023.csv",
+						"folderPath": "daily-pricing",
+						"fileSystem": "landing"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "DATE_OF_PRICING",
+						"type": "String"
+					},
+					{
+						"name": "ROW_ID",
+						"type": "String"
+					},
+					{
+						"name": "STATE_NAME",
+						"type": "String"
+					},
+					{
+						"name": "MARKET_NAME",
+						"type": "String"
+					},
+					{
+						"name": "PRODUCTGROUP_NAME",
+						"type": "String"
+					},
+					{
+						"name": "PRODUCT_NAME",
+						"type": "String"
+					},
+					{
+						"name": "VARIETY",
+						"type": "String"
+					},
+					{
+						"name": "ORIGIN",
+						"type": "String"
+					},
+					{
+						"name": "ARRIVAL_IN_TONNES",
+						"type": "String"
+					},
+					{
+						"name": "MINIMUM_PRICE",
+						"type": "String"
+					},
+					{
+						"name": "MAXIMUM_PRICE",
+						"type": "String"
+					},
+					{
+						"name": "MODAL_PRICE",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS_LANDING')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ADLS_JSON_PRICING_META_DATA_FILES')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ADLS_LANDING",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Ingest"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "metadata-daily-pricing.json",
+						"fileSystem": "adf-metadata"
+					}
+				},
+				"schema": {
+					"type": "object",
+					"properties": {
+						"Relative_URL_folder_name": {
+							"type": "string"
+						},
+						"Relative_URL_file_name": {
+							"type": "string"
+						},
+						"Relative_URL_file_type": {
+							"type": "string"
+						},
+						"sink_container_name": {
+							"type": "string"
+						},
+						"sink_folder_name": {
+							"type": "string"
+						},
+						"sink_file_name": {
+							"type": "string"
+						},
+						"sink_file_type": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS_LANDING')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ADLS_JSON_PRICING_META_DATA_FILES_LAB3')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ADLS_LANDING",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Working-Labs"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "metadata-daily-pricing-lab3b.json",
+						"fileSystem": "adf-metadata"
+					}
+				},
+				"schema": {
+					"type": "object",
+					"properties": {
+						"Relative_URL_file_name": {
+							"type": "string"
+						},
+						"sink_file_name": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS_LANDING')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ASQL_REPORT_DIM_MARKET')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_REPORTING_DB",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Transform"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "MARKET_NAME",
+						"type": "varchar"
+					},
+					{
+						"name": "MARKET_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DWH_CREATED_DATE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "DWH_UPDATED_DATE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "REPORTING",
+					"table": "DIM_MARKET"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_REPORTING_DB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ASQL_REPORT_DIM_PRODUCT')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_REPORTING_DB",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Transform"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "PRODUCT_NAME",
+						"type": "varchar"
+					},
+					{
+						"name": "PRODUCTGROUP_NAME",
+						"type": "varchar"
+					},
+					{
+						"name": "PRODUCT_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DWH_CREATED_DATE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "DWH_UPDATED_DATE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "REPORTING",
+					"table": "DIM_PRODUCT"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_REPORTING_DB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ASQL_REPORT_DIM_STATE')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_REPORTING_DB",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Transform"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "STATE_NAME",
+						"type": "varchar"
+					},
+					{
+						"name": "STATE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DWH_CREATED_DATE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "DWH_UPDATED_DATE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "REPORTING",
+					"table": "DIM_STATE"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_REPORTING_DB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ASQL_REPORT_DIM_STATE_SOURCE_SK_lab4')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_REPORTING_DB",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Working-Labs"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "STATE_NAME",
+						"type": "varchar"
+					},
+					{
+						"name": "STATE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DWH_CREATED_DATE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "DWH_UPDATED_DATE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "REPORTING",
+					"table": "DIM_STATE"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_REPORTING_DB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ASQL_REPORT_DIM_STATE_SOURCE_lab4')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_REPORTING_DB",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Working-Labs"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "STATE_NAME",
+						"type": "varchar"
+					},
+					{
+						"name": "STATE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DWH_CREATED_DATE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "DWH_UPDATED_DATE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "REPORTING",
+					"table": "DIM_STATE"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_REPORTING_DB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ASQL_REPORT_DIM_STATE_lab4')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_REPORTING_DB",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Working-Labs"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "STATE_NAME",
+						"type": "varchar"
+					},
+					{
+						"name": "STATE_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DWH_CREATED_DATE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "DWH_UPDATED_DATE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "REPORTING",
+					"table": "DIM_STATE"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_REPORTING_DB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ASQL_REPORT_DIM_TABLES_SOURCE')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_REPORTING_DB",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Transform"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_REPORTING_DB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ASQL_REPORT_DIM_VARIETY')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_REPORTING_DB",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Transform"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "VARIETY",
+						"type": "varchar"
+					},
+					{
+						"name": "VARIETY_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DWH_CREATED_DATE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "DWH_UPDATED_DATE",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "REPORTING",
+					"table": "DIM_VARIETY"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_REPORTING_DB')]"
+			]
+		}
+	]
+}

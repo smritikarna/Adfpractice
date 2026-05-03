@@ -1,0 +1,201 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "ADF-San-DEV"
+		},
+		"LS_ADLS_LANDING_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'LS_ADLS_LANDING'"
+		},
+		"LS_ASQL_REPORTING_DB_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LS_ASQL_REPORTING_DB'"
+		},
+		"ls_aarblobefn_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ls_aarblobefn'"
+		},
+		"LS_ADLS_LANDING_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://adlssandev.dfs.core.windows.net/"
+		},
+		"LS_ASQL_REPORTING_DB_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "sql-reporting-daily-pricing-database-dev.database.windows.net"
+		},
+		"LS_ASQL_REPORTING_DB_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "asql_reporting_daily_pricing_database_dev"
+		},
+		"LS_ASQL_REPORTING_DB_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "clouddbadmin"
+		},
+		"LS_HTTP_SOURCE_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://retailpricing.blob.core.windows.net "
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_container_name": {
+			"type": "string",
+			"defaultValue": "landing"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_folder_name": {
+			"type": "string",
+			"defaultValue": "/labs/lab3/"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_file_name": {
+			"type": "string",
+			"defaultValue": "PW_MW_DR_"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_folder_name": {
+			"type": "string",
+			"defaultValue": "/labs/lab3/"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_file_name": {
+			"type": "string",
+			"defaultValue": "PW_MW_DR_"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_file_date": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowStartTime"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_file_type": {
+			"type": "string",
+			"defaultValue": ".csv"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_file_type": {
+			"type": "string",
+			"defaultValue": ".csv"
+		},
+		"TW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_source_file_date": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowStartTime"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "ADF-San-DEV_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"LS_ADLS_LANDING_accountKey": {
+						"value": "[parameters('LS_ADLS_LANDING_accountKey')]"
+					},
+					"LS_ASQL_REPORTING_DB_password": {
+						"value": "[parameters('LS_ASQL_REPORTING_DB_password')]"
+					},
+					"ls_aarblobefn_connectionString": {
+						"value": "[parameters('ls_aarblobefn_connectionString')]"
+					},
+					"LS_ADLS_LANDING_properties_typeProperties_url": {
+						"value": "[parameters('LS_ADLS_LANDING_properties_typeProperties_url')]"
+					},
+					"LS_ASQL_REPORTING_DB_properties_typeProperties_server": {
+						"value": "[parameters('LS_ASQL_REPORTING_DB_properties_typeProperties_server')]"
+					},
+					"LS_ASQL_REPORTING_DB_properties_typeProperties_database": {
+						"value": "[parameters('LS_ASQL_REPORTING_DB_properties_typeProperties_database')]"
+					},
+					"LS_ASQL_REPORTING_DB_properties_typeProperties_userName": {
+						"value": "[parameters('LS_ASQL_REPORTING_DB_properties_typeProperties_userName')]"
+					},
+					"LS_HTTP_SOURCE_properties_typeProperties_url": {
+						"value": "[parameters('LS_HTTP_SOURCE_properties_typeProperties_url')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "ADF-San-DEV_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'ADF-San-DEV_ArmTemplate_0')]"
+			]
+		},
+		{
+			"name": "ADF-San-DEV_ArmTemplate_2",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_2.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_container_name": {
+						"value": "[parameters('TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_container_name')]"
+					},
+					"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_folder_name": {
+						"value": "[parameters('TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_folder_name')]"
+					},
+					"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_file_name": {
+						"value": "[parameters('TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_file_name')]"
+					},
+					"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_folder_name": {
+						"value": "[parameters('TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_folder_name')]"
+					},
+					"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_file_name": {
+						"value": "[parameters('TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_file_name')]"
+					},
+					"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_file_date": {
+						"value": "[parameters('TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_file_date')]"
+					},
+					"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_file_type": {
+						"value": "[parameters('TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_file_type')]"
+					},
+					"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_file_type": {
+						"value": "[parameters('TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_file_type')]"
+					},
+					"TW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_source_file_date": {
+						"value": "[parameters('TW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_source_file_date')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'ADF-San-DEV_ArmTemplate_1')]"
+			]
+		}
+	]
+}

@@ -1,0 +1,2091 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "ADF-San-DEV"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_HTTP_SOURCE_PRICING_DATA')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_HTTP_SOURCE",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"dst_prm_Relative_URL": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Ingest"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "HttpServerLocation",
+						"relativeUrl": {
+							"value": "@dataset().dst_prm_Relative_URL",
+							"type": "Expression"
+						}
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_HTTP_SOURCE_PRICING_DATA_lab1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_HTTP_SOURCE",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Working-Labs"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "HttpServerLocation",
+						"relativeUrl": "/labs/lab1/PW_MW_DR_01012023.csv"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_HTTP_SOURCE_PRICING_DATA_lab2')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_HTTP_SOURCE",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Working-Labs"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "HttpServerLocation",
+						"relativeUrl": "/labs/lab2/PW_MW_DR_01012023.json"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_HTTP_SOURCE_PRICING_DATA_lab3')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_HTTP_SOURCE",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"dst_prm_Relative_URL": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Working-Labs"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "HttpServerLocation",
+						"relativeUrl": {
+							"value": "@dataset().dst_prm_Relative_URL",
+							"type": "Expression"
+						}
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_destination')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_aarblobefn",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "destinationfiles"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "DEPTNO",
+						"type": "String"
+					},
+					{
+						"name": "DNAME",
+						"type": "String"
+					},
+					{
+						"name": "LOC",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_source')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_aarblobefn",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"FileName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": {
+							"value": "@dataset().FileName",
+							"type": "Expression"
+						},
+						"container": "sourcefiles"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "DEPTNO",
+						"type": "String"
+					},
+					{
+						"name": "DNAME",
+						"type": "String"
+					},
+					{
+						"name": "LOC",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_source_blob')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_aarblobefn",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "sourcefiles"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "DEPTNO",
+						"type": "String"
+					},
+					{
+						"name": "DNAME",
+						"type": "String"
+					},
+					{
+						"name": "LOC",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Dynamically copy data')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get Metadata1",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_source_blob",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"fieldList": [
+								"childItems"
+							],
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							},
+							"formatSettings": {
+								"type": "DelimitedTextReadSettings"
+							}
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Get Metadata1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get Metadata1').output.childItems",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Copy data1",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "DelimitedTextSource",
+											"storeSettings": {
+												"type": "AzureBlobStorageReadSettings",
+												"recursive": true,
+												"enablePartitionDiscovery": false
+											},
+											"formatSettings": {
+												"type": "DelimitedTextReadSettings"
+											}
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureBlobStorageWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_source",
+											"type": "DatasetReference",
+											"parameters": {
+												"FileName": {
+													"value": "@item().name",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_destination",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_source_blob')]",
+				"[concat(variables('factoryId'), '/datasets/ds_source')]",
+				"[concat(variables('factoryId'), '/datasets/ds_destination')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_ingest_daily_pricing_data')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Set variable source file date",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "pln_var_source_file_date",
+							"value": {
+								"value": "@formatDateTime(pipeline().parameters.pln_prm_source_file_date,'MMddyyyy')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Lookup Read Json Metadata",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Set variable source file date",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "JsonSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "DS_ADLS_JSON_PRICING_META_DATA_FILES",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEach Iterate Source File",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Lookup Read Json Metadata",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Lookup Read Json Metadata').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Copy daily pricing data",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "DelimitedTextSource",
+											"storeSettings": {
+												"type": "HttpReadSettings",
+												"requestMethod": "GET"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextReadSettings"
+											}
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "DS_HTTP_SOURCE_PRICING_DATA",
+											"type": "DatasetReference",
+											"parameters": {
+												"dst_prm_Relative_URL": {
+													"value": "@concat(item().Relative_URL_folder_name,item().Relative_URL_file_name,variables('pln_var_source_file_date'),item().Relative_URL_file_type)",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DS_ADLS_DAILY_PRICING_DATA",
+											"type": "DatasetReference",
+											"parameters": {
+												"dst_prm_sink_container_name": {
+													"value": "@item().sink_container_name",
+													"type": "Expression"
+												},
+												"dst_prm_sink_folder_name": {
+													"value": "@item().sink_folder_name",
+													"type": "Expression"
+												},
+												"dst_prm_sink_file_name": {
+													"value": "@concat(item().sink_file_name,variables('pln_var_source_file_date'),item().sink_file_type)",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"pln_prm_source_file_date": {
+						"type": "string",
+						"defaultValue": "2023-01-01T10:10:10Z"
+					}
+				},
+				"variables": {
+					"pln_var_source_file_date": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Ingest"
+				},
+				"annotations": [],
+				"lastPublishTime": "2025-12-20T14:07:53Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_HTTP_SOURCE_PRICING_DATA')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_ingest_daily_pricing_data_lab1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy_Source_Pricing_Data",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "HttpReadSettings",
+									"requestMethod": "GET"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_HTTP_SOURCE_PRICING_DATA_lab1",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_ADLS_DAILY_PRICING_DATA_lab1",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Working-Labs"
+				},
+				"annotations": [],
+				"lastPublishTime": "2025-12-18T17:13:49Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_HTTP_SOURCE_PRICING_DATA_lab1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_ingest_daily_pricing_data_lab2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "JsonSource",
+								"storeSettings": {
+									"type": "HttpReadSettings",
+									"requestMethod": "GET"
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							},
+							"sink": {
+								"type": "JsonSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "JsonWriteSettings"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_HTTP_SOURCE_PRICING_DATA_lab2",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_ADLS_DAILY_PRICING_DATA_lab2",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Working-Labs"
+				},
+				"annotations": [],
+				"lastPublishTime": "2025-12-18T17:13:49Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_HTTP_SOURCE_PRICING_DATA_lab2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_ingest_daily_pricing_data_lab3')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data Pricing",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "HttpReadSettings",
+									"requestMethod": "GET"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_HTTP_SOURCE_PRICING_DATA_lab3",
+								"type": "DatasetReference",
+								"parameters": {
+									"dst_prm_Relative_URL": {
+										"value": "@pipeline().parameters.pln_prm_Relative_URL",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_ADLS_DAILY_PRICING_DATA_lab3",
+								"type": "DatasetReference",
+								"parameters": {
+									"dst_prm_sink_container_name": {
+										"value": "@pipeline().parameters.pln_prm_sink_container_name",
+										"type": "Expression"
+									},
+									"dst_prm_sink_folder_name": {
+										"value": "@pipeline().parameters.pln_prm_sink_folder_name",
+										"type": "Expression"
+									},
+									"dst_prm_sink_file_name": {
+										"value": "@pipeline().parameters.pln_prm_sink_file_name",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"pln_prm_Relative_URL": {
+						"type": "String"
+					},
+					"pln_prm_sink_container_name": {
+						"type": "string"
+					},
+					"pln_prm_sink_folder_name": {
+						"type": "string"
+					},
+					"pln_prm_sink_file_name": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Working-Labs"
+				},
+				"annotations": [],
+				"lastPublishTime": "2025-12-18T17:13:49Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_HTTP_SOURCE_PRICING_DATA_lab3')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_ingest_daily_pricing_data_lab3a')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data Pricing",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Set variable Relative URL File date",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "HttpReadSettings",
+									"requestMethod": "GET"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_HTTP_SOURCE_PRICING_DATA_lab3",
+								"type": "DatasetReference",
+								"parameters": {
+									"dst_prm_Relative_URL": {
+										"value": "@concat(pipeline().parameters.pln_prm_Relative_URL_folder_name,pipeline().parameters.pln_prm_Relative_URL_file_name,\nvariables('pln_var_Relative_URL_file_date'),pipeline().parameters.pln_prm_Relative_URL_file_type)",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_ADLS_DAILY_PRICING_DATA_lab3",
+								"type": "DatasetReference",
+								"parameters": {
+									"dst_prm_sink_container_name": {
+										"value": "@pipeline().parameters.pln_prm_sink_container_name",
+										"type": "Expression"
+									},
+									"dst_prm_sink_folder_name": {
+										"value": "@pipeline().parameters.pln_prm_sink_folder_name",
+										"type": "Expression"
+									},
+									"dst_prm_sink_file_name": {
+										"value": "@concat(pipeline().parameters.pln_prm_sink_file_name,\nvariables('pln_var_Relative_URL_file_date'),\npipeline().parameters.pln_prm_sink_file_type)",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					},
+					{
+						"name": "Set variable Relative URL File date",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "pln_var_Relative_URL_file_date",
+							"value": {
+								"value": "@formatDateTime(pipeline().parameters.pln_prm_Relative_URL_file_date,'MMddyyyy')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"pln_prm_sink_container_name": {
+						"type": "string",
+						"defaultValue": "landing"
+					},
+					"pln_prm_sink_folder_name": {
+						"type": "string",
+						"defaultValue": "/labs/lab3/"
+					},
+					"pln_prm_sink_file_name": {
+						"type": "string",
+						"defaultValue": "PW_MW_DR_"
+					},
+					"pln_prm_Relative_URL_folder_name": {
+						"type": "string",
+						"defaultValue": "/labs/lab3/"
+					},
+					"pln_prm_Relative_URL_file_name": {
+						"type": "string",
+						"defaultValue": "PW_MW_DR_"
+					},
+					"pln_prm_Relative_URL_file_date": {
+						"type": "string"
+					},
+					"pln_prm_Relative_URL_file_type": {
+						"type": "string",
+						"defaultValue": ".csv"
+					},
+					"pln_prm_sink_file_type": {
+						"type": "string",
+						"defaultValue": ".csv"
+					}
+				},
+				"variables": {
+					"pln_var_Relative_URL_file_date": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Working-Labs"
+				},
+				"annotations": [],
+				"lastPublishTime": "2025-12-18T17:13:49Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_HTTP_SOURCE_PRICING_DATA_lab3')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_ingest_daily_pricing_data_lab3b')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Set variable Relative URL File date",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "pln_var_Relative_URL_file_date",
+							"value": {
+								"value": "@formatDateTime(pipeline().parameters.pln_prm_Relative_URL_file_date,'MMddyyyy')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Lookup Read Json Metadata",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Set variable Relative URL File date",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "JsonSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "DS_ADLS_JSON_PRICING_META_DATA_FILES_LAB3",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEach Iterate Source File Names",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Lookup Read Json Metadata",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Lookup Read Json Metadata').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Copy data Pricing",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "DelimitedTextSource",
+											"storeSettings": {
+												"type": "HttpReadSettings",
+												"requestMethod": "GET"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextReadSettings"
+											}
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "DS_HTTP_SOURCE_PRICING_DATA_lab3",
+											"type": "DatasetReference",
+											"parameters": {
+												"dst_prm_Relative_URL": {
+													"value": "@concat(pipeline().parameters.pln_prm_Relative_URL_folder_name,\nitem().Relative_URL_file_name,\nvariables('pln_var_Relative_URL_file_date'),pipeline().parameters.pln_prm_Relative_URL_file_type)",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DS_ADLS_DAILY_PRICING_DATA_lab3",
+											"type": "DatasetReference",
+											"parameters": {
+												"dst_prm_sink_container_name": {
+													"value": "@pipeline().parameters.pln_prm_sink_container_name",
+													"type": "Expression"
+												},
+												"dst_prm_sink_folder_name": {
+													"value": "@pipeline().parameters.pln_prm_sink_folder_name",
+													"type": "Expression"
+												},
+												"dst_prm_sink_file_name": {
+													"value": "@concat(item().Relative_URL_file_name,\nvariables('pln_var_Relative_URL_file_date'),\npipeline().parameters.pln_prm_sink_file_type)",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"pln_prm_sink_container_name": {
+						"type": "string",
+						"defaultValue": "landing"
+					},
+					"pln_prm_sink_folder_name": {
+						"type": "string",
+						"defaultValue": "/labs/lab3/"
+					},
+					"pln_prm_Relative_URL_folder_name": {
+						"type": "string",
+						"defaultValue": "/labs/lab3/"
+					},
+					"pln_prm_Relative_URL_file_date": {
+						"type": "string"
+					},
+					"pln_prm_Relative_URL_file_type": {
+						"type": "string",
+						"defaultValue": ".csv"
+					},
+					"pln_prm_sink_file_type": {
+						"type": "string",
+						"defaultValue": ".csv"
+					}
+				},
+				"variables": {
+					"pln_var_Relative_URL_file_date": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Working-Labs"
+				},
+				"annotations": [],
+				"lastPublishTime": "2025-12-18T17:13:49Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_HTTP_SOURCE_PRICING_DATA_lab3')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_load_reporting_dim_market')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Transform"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DS_ADLS_DAILY_PRICING_LANDING_SOURCE",
+								"type": "DatasetReference"
+							},
+							"name": "sourcereaddailypricingdata"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_REPORT_DIM_TABLES_SOURCE",
+								"type": "DatasetReference"
+							},
+							"name": "sourcedimlookup"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_REPORT_DIM_TABLES_SOURCE",
+								"type": "DatasetReference"
+							},
+							"name": "sourcegetmaxskvalue"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_REPORT_DIM_MARKET",
+								"type": "DatasetReference"
+							},
+							"name": "sinkdimensiontables"
+						}
+					],
+					"transformations": [
+						{
+							"name": "selectdimcolumnvalue"
+						},
+						{
+							"name": "aggregatefinduniquesourcevalues"
+						},
+						{
+							"name": "lookupdimtable"
+						},
+						{
+							"name": "filternewsourcevalues"
+						},
+						{
+							"name": "joinmaxsurrogatekey"
+						},
+						{
+							"name": "selectmapdimcolumns"
+						},
+						{
+							"name": "surrogateKeygeeratenewId"
+						},
+						{
+							"name": "derivedColumnnewkeyandauditcolumns"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     dfl_prm_reporting_schema_name as string,",
+						"     dfl_prm_reporting_table_name as string,",
+						"     dfl_prm_reporting_lookup_column_name as string,",
+						"     dfl_prm_reporting_table_id_column as string",
+						"}",
+						"source(output(",
+						"          DATE_OF_PRICING as string,",
+						"          ROW_ID as string,",
+						"          STATE_NAME as string,",
+						"          MARKET_NAME as string,",
+						"          PRODUCTGROUP_NAME as string,",
+						"          PRODUCT_NAME as string,",
+						"          VARIETY as string,",
+						"          ORIGIN as string,",
+						"          ARRIVAL_IN_TONNES as string,",
+						"          MINIMUM_PRICE as string,",
+						"          MAXIMUM_PRICE as string,",
+						"          MODAL_PRICE as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourcereaddailypricingdata",
+						"source(output(",
+						"          DIM_LOOKUP_VALUE as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: ( concat('SELECT ' , $dfl_prm_reporting_lookup_column_name , ' as DIM_LOOKUP_VALUE FROM ' , $dfl_prm_reporting_schema_name, '.' ,$dfl_prm_reporting_table_name )),",
+						"     format: 'query') ~> sourcedimlookup",
+						"source(output(",
+						"          MAX_SURROGATE_KEY_ID as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: (concat('SELECT COALESCE(MAX(' , $dfl_prm_reporting_table_id_column , '),0) as MAX_SURROGATE_KEY_ID  FROM ' , $dfl_prm_reporting_schema_name , '.' , $dfl_prm_reporting_table_name)),",
+						"     format: 'query') ~> sourcegetmaxskvalue",
+						"sourcereaddailypricingdata select(mapColumn(",
+						"          SOURCE_FILE_DIM_COLUMN = MARKET_NAME",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectdimcolumnvalue",
+						"selectdimcolumnvalue aggregate(groupBy(SOURCE_FILE_DIM_COLUMN),",
+						"     count_source_file_dim_column = count(SOURCE_FILE_DIM_COLUMN)) ~> aggregatefinduniquesourcevalues",
+						"aggregatefinduniquesourcevalues, sourcedimlookup lookup(SOURCE_FILE_DIM_COLUMN == DIM_LOOKUP_VALUE,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookupdimtable",
+						"lookupdimtable filter(isNull(DIM_LOOKUP_VALUE)) ~> filternewsourcevalues",
+						"filternewsourcevalues, sourcegetmaxskvalue join(! (isNull(SOURCE_FILE_DIM_COLUMN) && isNull(MAX_SURROGATE_KEY_ID)),",
+						"     joinType:'cross',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinmaxsurrogatekey",
+						"joinmaxsurrogatekey select(mapColumn(",
+						"          SOURCE_FILE_DIM_COLUMN,",
+						"          MAX_SURROGATE_KEY_ID",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectmapdimcolumns",
+						"selectmapdimcolumns keyGenerate(output(SURROGATE_KEY_ID as long),",
+						"     startAt: 1L,",
+						"     stepValue: 1L) ~> surrogateKeygeeratenewId",
+						"surrogateKeygeeratenewId derive(NEW_SURROGATE_KEY = MAX_SURROGATE_KEY_ID + SURROGATE_KEY_ID,",
+						"          DWH_CREATED_DATE = currentDate(),",
+						"          DWH_UPDATED_DATE = currentDate()) ~> derivedColumnnewkeyandauditcolumns",
+						"derivedColumnnewkeyandauditcolumns sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          MARKET_NAME as string,",
+						"          MARKET_ID as integer,",
+						"          DWH_CREATED_DATE as timestamp,",
+						"          DWH_UPDATED_DATE as timestamp",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          MARKET_NAME = SOURCE_FILE_DIM_COLUMN,",
+						"          MARKET_ID = NEW_SURROGATE_KEY,",
+						"          DWH_CREATED_DATE,",
+						"          DWH_UPDATED_DATE",
+						"     )) ~> sinkdimensiontables"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_load_reporting_dim_product')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Transform"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DS_ADLS_DAILY_PRICING_LANDING_SOURCE",
+								"type": "DatasetReference"
+							},
+							"name": "sourcereaddailypricingdata"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_REPORT_DIM_TABLES_SOURCE",
+								"type": "DatasetReference"
+							},
+							"name": "sourcedimlookup"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_REPORT_DIM_TABLES_SOURCE",
+								"type": "DatasetReference"
+							},
+							"name": "sourcegetmaxskvalue"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_REPORT_DIM_PRODUCT",
+								"type": "DatasetReference"
+							},
+							"name": "sinkdimensiontables"
+						}
+					],
+					"transformations": [
+						{
+							"name": "selectdimcolumnvalue"
+						},
+						{
+							"name": "aggregatefinduniquesourcevalues"
+						},
+						{
+							"name": "lookupdimtable"
+						},
+						{
+							"name": "filternewsourcevalues"
+						},
+						{
+							"name": "joinmaxsurrogatekey"
+						},
+						{
+							"name": "selectmapdimcolumns"
+						},
+						{
+							"name": "surrogateKeygeeratenewId"
+						},
+						{
+							"name": "derivedColumnnewkeyandauditcolumns"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     dfl_prm_reporting_schema_name as string,",
+						"     dfl_prm_reporting_table_name as string,",
+						"     dfl_prm_reporting_lookup_column_name as string,",
+						"     dfl_prm_reporting_table_id_column as string",
+						"}",
+						"source(output(",
+						"          DATE_OF_PRICING as string,",
+						"          ROW_ID as string,",
+						"          STATE_NAME as string,",
+						"          MARKET_NAME as string,",
+						"          PRODUCTGROUP_NAME as string,",
+						"          PRODUCT_NAME as string,",
+						"          VARIETY as string,",
+						"          ORIGIN as string,",
+						"          ARRIVAL_IN_TONNES as string,",
+						"          MINIMUM_PRICE as string,",
+						"          MAXIMUM_PRICE as string,",
+						"          MODAL_PRICE as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourcereaddailypricingdata",
+						"source(output(",
+						"          DIM_LOOKUP_VALUE as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: ( concat('SELECT ' , $dfl_prm_reporting_lookup_column_name , ' as DIM_LOOKUP_VALUE FROM ' , $dfl_prm_reporting_schema_name, '.' ,$dfl_prm_reporting_table_name )),",
+						"     format: 'query') ~> sourcedimlookup",
+						"source(output(",
+						"          MAX_SURROGATE_KEY_ID as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: (concat('SELECT COALESCE(MAX(' , $dfl_prm_reporting_table_id_column , '),0) as MAX_SURROGATE_KEY_ID  FROM ' , $dfl_prm_reporting_schema_name , '.' , $dfl_prm_reporting_table_name)),",
+						"     format: 'query') ~> sourcegetmaxskvalue",
+						"sourcereaddailypricingdata select(mapColumn(",
+						"          SOURCE_FILE_DIM_COLUMN = PRODUCT_NAME,",
+						"          PRODUCTGROUP_NAME",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectdimcolumnvalue",
+						"selectdimcolumnvalue aggregate(groupBy(SOURCE_FILE_DIM_COLUMN,",
+						"          PRODUCTGROUP_NAME),",
+						"     count_source_file_dim_column = count(SOURCE_FILE_DIM_COLUMN)) ~> aggregatefinduniquesourcevalues",
+						"aggregatefinduniquesourcevalues, sourcedimlookup lookup(SOURCE_FILE_DIM_COLUMN == DIM_LOOKUP_VALUE,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookupdimtable",
+						"lookupdimtable filter(isNull(DIM_LOOKUP_VALUE)) ~> filternewsourcevalues",
+						"filternewsourcevalues, sourcegetmaxskvalue join(! (isNull(SOURCE_FILE_DIM_COLUMN) && isNull(MAX_SURROGATE_KEY_ID)),",
+						"     joinType:'cross',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinmaxsurrogatekey",
+						"joinmaxsurrogatekey select(mapColumn(",
+						"          SOURCE_FILE_DIM_COLUMN,",
+						"          MAX_SURROGATE_KEY_ID,",
+						"          PRODUCTGROUP_NAME",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectmapdimcolumns",
+						"selectmapdimcolumns keyGenerate(output(SURROGATE_KEY_ID as long),",
+						"     startAt: 1L,",
+						"     stepValue: 1L) ~> surrogateKeygeeratenewId",
+						"surrogateKeygeeratenewId derive(NEW_SURROGATE_KEY = MAX_SURROGATE_KEY_ID + SURROGATE_KEY_ID,",
+						"          DWH_CREATED_DATE = currentDate(),",
+						"          DWH_UPDATED_DATE = currentDate()) ~> derivedColumnnewkeyandauditcolumns",
+						"derivedColumnnewkeyandauditcolumns sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          PRODUCT_NAME as string,",
+						"          PRODUCTGROUP_NAME as string,",
+						"          PRODUCT_ID as integer,",
+						"          DWH_CREATED_DATE as timestamp,",
+						"          DWH_UPDATED_DATE as timestamp",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          PRODUCT_NAME = SOURCE_FILE_DIM_COLUMN,",
+						"          PRODUCT_ID = NEW_SURROGATE_KEY,",
+						"          PRODUCTGROUP_NAME,",
+						"          DWH_CREATED_DATE,",
+						"          DWH_UPDATED_DATE",
+						"     )) ~> sinkdimensiontables"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_load_reporting_dim_state')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DS_ADLS_DAILY_PRICING_LANDING_SOURCE_lab4",
+								"type": "DatasetReference"
+							},
+							"name": "sourcereaddailypricing"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_REPORT_DIM_STATE_SOURCE_lab4",
+								"type": "DatasetReference"
+							},
+							"name": "sourcedimstatelookup"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_REPORT_DIM_STATE_SOURCE_SK_lab4",
+								"type": "DatasetReference"
+							},
+							"name": "sourcemaxstateid"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_REPORT_DIM_STATE_lab4",
+								"type": "DatasetReference"
+							},
+							"name": "sinkdimstate"
+						}
+					],
+					"transformations": [
+						{
+							"name": "selectstatename"
+						},
+						{
+							"name": "aggregatecount"
+						},
+						{
+							"name": "selectuniquestatename"
+						},
+						{
+							"name": "surrogateKeygeneratestateid"
+						},
+						{
+							"name": "derivedColumnauditcolumns"
+						},
+						{
+							"name": "selectdimstatelookup"
+						},
+						{
+							"name": "lookupstatename"
+						},
+						{
+							"name": "filternewstatename"
+						},
+						{
+							"name": "joinMAXSTATEID"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          DATE_OF_PRICING as string,",
+						"          ROW_ID as string,",
+						"          STATE_NAME as string,",
+						"          MARKET_NAME as string,",
+						"          PRODUCTGROUP_NAME as string,",
+						"          PRODUCT_NAME as string,",
+						"          VARIETY as string,",
+						"          ORIGIN as string,",
+						"          ARRIVAL_IN_TONNES as string,",
+						"          MINIMUM_PRICE as string,",
+						"          MAXIMUM_PRICE as string,",
+						"          MODAL_PRICE as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourcereaddailypricing",
+						"source(output(",
+						"          STATE_NAME as string,",
+						"          STATE_ID as integer,",
+						"          DWH_CREATED_DATE as timestamp,",
+						"          DWH_UPDATED_DATE as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> sourcedimstatelookup",
+						"source(output(",
+						"          MAX_STATE_ID as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'SELECT MAX(STATE_ID) AS MAX_STATE_ID FROM [REPORTING].[DIM_STATE]',",
+						"     format: 'query') ~> sourcemaxstateid",
+						"sourcereaddailypricing select(mapColumn(",
+						"          STATE_NAME",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectstatename",
+						"selectstatename aggregate(groupBy(STATE_NAME),",
+						"     COUNT_STATE_NAME = count(STATE_NAME)) ~> aggregatecount",
+						"aggregatecount select(mapColumn(",
+						"          STATE_NAME",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectuniquestatename",
+						"joinMAXSTATEID keyGenerate(output(STATE_ID as long),",
+						"     startAt: 1L,",
+						"     stepValue: 1L) ~> surrogateKeygeneratestateid",
+						"surrogateKeygeneratestateid derive({DWH_CREATED_DATE     DATETIME} = currentDate(),",
+						"          {DWH_UPDATED_DATE     DATETIME} = currentDate(),",
+						"          NEW_STATE_ID = MAX_STATE_ID + STATE_ID) ~> derivedColumnauditcolumns",
+						"sourcedimstatelookup select(mapColumn(",
+						"          LOOKUP_STATE_NAME = STATE_NAME",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectdimstatelookup",
+						"selectuniquestatename, selectdimstatelookup lookup(STATE_NAME == LOOKUP_STATE_NAME,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookupstatename",
+						"lookupstatename filter(isNull(LOOKUP_STATE_NAME)) ~> filternewstatename",
+						"filternewstatename, sourcemaxstateid join(!(isNull(STATE_NAME) && isNull(MAX_STATE_ID)),",
+						"     joinType:'cross',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinMAXSTATEID",
+						"derivedColumnauditcolumns sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          STATE_NAME as string,",
+						"          STATE_ID as integer,",
+						"          DWH_CREATED_DATE as timestamp,",
+						"          DWH_UPDATED_DATE as timestamp",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          STATE_NAME,",
+						"          STATE_ID = NEW_STATE_ID,",
+						"          DWH_CREATED_DATE = {DWH_CREATED_DATE     DATETIME},",
+						"          DWH_UPDATED_DATE = {DWH_UPDATED_DATE     DATETIME}",
+						"     )) ~> sinkdimstate"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_load_reporting_dim_state_table')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Transform"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DS_ADLS_DAILY_PRICING_LANDING_SOURCE",
+								"type": "DatasetReference"
+							},
+							"name": "sourcereaddailypricingdata"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_REPORT_DIM_TABLES_SOURCE",
+								"type": "DatasetReference"
+							},
+							"name": "sourcedimlookup"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_REPORT_DIM_TABLES_SOURCE",
+								"type": "DatasetReference"
+							},
+							"name": "sourcegetmaxskvalue"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_REPORT_DIM_STATE",
+								"type": "DatasetReference"
+							},
+							"name": "sinkdimensiontables"
+						}
+					],
+					"transformations": [
+						{
+							"name": "selectdimcolumnvalue"
+						},
+						{
+							"name": "aggregatefinduniquesourcevalues"
+						},
+						{
+							"name": "lookupdimtable"
+						},
+						{
+							"name": "filternewsourcevalues"
+						},
+						{
+							"name": "joinmaxsurrogatekey"
+						},
+						{
+							"name": "selectmapdimcolumns"
+						},
+						{
+							"name": "surrogateKeygeeratenewId"
+						},
+						{
+							"name": "derivedColumnnewkeyandauditcolumns"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     dfl_prm_reporting_schema_name as string,",
+						"     dfl_prm_reporting_table_name as string,",
+						"     dfl_prm_reporting_lookup_column_name as string,",
+						"     dfl_prm_reporting_table_id_column as string",
+						"}",
+						"source(output(",
+						"          DATE_OF_PRICING as string,",
+						"          ROW_ID as string,",
+						"          STATE_NAME as string,",
+						"          MARKET_NAME as string,",
+						"          PRODUCTGROUP_NAME as string,",
+						"          PRODUCT_NAME as string,",
+						"          VARIETY as string,",
+						"          ORIGIN as string,",
+						"          ARRIVAL_IN_TONNES as string,",
+						"          MINIMUM_PRICE as string,",
+						"          MAXIMUM_PRICE as string,",
+						"          MODAL_PRICE as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourcereaddailypricingdata",
+						"source(output(",
+						"          DIM_LOOKUP_VALUE as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: ( concat('SELECT ' , $dfl_prm_reporting_lookup_column_name , ' as DIM_LOOKUP_VALUE FROM ' , $dfl_prm_reporting_schema_name, '.' ,$dfl_prm_reporting_table_name )),",
+						"     format: 'query') ~> sourcedimlookup",
+						"source(output(",
+						"          MAX_SURROGATE_KEY_ID as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: (concat('SELECT COALESCE(MAX(' , $dfl_prm_reporting_table_id_column , '),0) as MAX_SURROGATE_KEY_ID  FROM ' , $dfl_prm_reporting_schema_name , '.' , $dfl_prm_reporting_table_name)),",
+						"     format: 'query') ~> sourcegetmaxskvalue",
+						"sourcereaddailypricingdata select(mapColumn(",
+						"          SOURCE_FILE_DIM_COLUMN = STATE_NAME",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectdimcolumnvalue",
+						"selectdimcolumnvalue aggregate(groupBy(SOURCE_FILE_DIM_COLUMN),",
+						"     count_source_file_dim_column = count(SOURCE_FILE_DIM_COLUMN)) ~> aggregatefinduniquesourcevalues",
+						"aggregatefinduniquesourcevalues, sourcedimlookup lookup(SOURCE_FILE_DIM_COLUMN == DIM_LOOKUP_VALUE,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookupdimtable",
+						"lookupdimtable filter(isNull(DIM_LOOKUP_VALUE)) ~> filternewsourcevalues",
+						"filternewsourcevalues, sourcegetmaxskvalue join(! (isNull(SOURCE_FILE_DIM_COLUMN) && isNull(MAX_SURROGATE_KEY_ID)),",
+						"     joinType:'cross',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinmaxsurrogatekey",
+						"joinmaxsurrogatekey select(mapColumn(",
+						"          SOURCE_FILE_DIM_COLUMN,",
+						"          MAX_SURROGATE_KEY_ID",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectmapdimcolumns",
+						"selectmapdimcolumns keyGenerate(output(SURROGATE_KEY_ID as long),",
+						"     startAt: 1L,",
+						"     stepValue: 1L) ~> surrogateKeygeeratenewId",
+						"surrogateKeygeeratenewId derive(NEW_SURROGATE_KEY = MAX_SURROGATE_KEY_ID + SURROGATE_KEY_ID,",
+						"          DWH_CREATED_DATE = currentDate(),",
+						"          DWH_UPDATED_DATE = currentDate()) ~> derivedColumnnewkeyandauditcolumns",
+						"derivedColumnnewkeyandauditcolumns sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          STATE_NAME as string,",
+						"          STATE_ID as integer,",
+						"          DWH_CREATED_DATE as timestamp,",
+						"          DWH_UPDATED_DATE as timestamp",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          STATE_NAME = SOURCE_FILE_DIM_COLUMN,",
+						"          STATE_ID = NEW_SURROGATE_KEY,",
+						"          DWH_CREATED_DATE,",
+						"          DWH_UPDATED_DATE",
+						"     )) ~> sinkdimensiontables"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_load_reporting_dim_variety')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Transform"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DS_ADLS_DAILY_PRICING_LANDING_SOURCE",
+								"type": "DatasetReference"
+							},
+							"name": "sourcereaddailypricingdata"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_REPORT_DIM_TABLES_SOURCE",
+								"type": "DatasetReference"
+							},
+							"name": "sourcedimlookup"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_REPORT_DIM_TABLES_SOURCE",
+								"type": "DatasetReference"
+							},
+							"name": "sourcegetmaxskvalue"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DS_ASQL_REPORT_DIM_VARIETY",
+								"type": "DatasetReference"
+							},
+							"name": "sinkdimensiontables"
+						}
+					],
+					"transformations": [
+						{
+							"name": "selectdimcolumnvalue"
+						},
+						{
+							"name": "aggregatefinduniquesourcevalues"
+						},
+						{
+							"name": "lookupdimtable"
+						},
+						{
+							"name": "filternewsourcevalues"
+						},
+						{
+							"name": "joinmaxsurrogatekey"
+						},
+						{
+							"name": "selectmapdimcolumns"
+						},
+						{
+							"name": "surrogateKeygeeratenewId"
+						},
+						{
+							"name": "derivedColumnnewkeyandauditcolumns"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     dfl_prm_reporting_schema_name as string,",
+						"     dfl_prm_reporting_table_name as string,",
+						"     dfl_prm_reporting_lookup_column_name as string,",
+						"     dfl_prm_reporting_table_id_column as string",
+						"}",
+						"source(output(",
+						"          DATE_OF_PRICING as string,",
+						"          ROW_ID as string,",
+						"          STATE_NAME as string,",
+						"          MARKET_NAME as string,",
+						"          PRODUCTGROUP_NAME as string,",
+						"          PRODUCT_NAME as string,",
+						"          VARIETY as string,",
+						"          ORIGIN as string,",
+						"          ARRIVAL_IN_TONNES as string,",
+						"          MINIMUM_PRICE as string,",
+						"          MAXIMUM_PRICE as string,",
+						"          MODAL_PRICE as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourcereaddailypricingdata",
+						"source(output(",
+						"          DIM_LOOKUP_VALUE as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: ( concat('SELECT ' , $dfl_prm_reporting_lookup_column_name , ' as DIM_LOOKUP_VALUE FROM ' , $dfl_prm_reporting_schema_name, '.' ,$dfl_prm_reporting_table_name )),",
+						"     format: 'query') ~> sourcedimlookup",
+						"source(output(",
+						"          MAX_SURROGATE_KEY_ID as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: (concat('SELECT COALESCE(MAX(' , $dfl_prm_reporting_table_id_column , '),0) as MAX_SURROGATE_KEY_ID  FROM ' , $dfl_prm_reporting_schema_name , '.' , $dfl_prm_reporting_table_name)),",
+						"     format: 'query') ~> sourcegetmaxskvalue",
+						"sourcereaddailypricingdata select(mapColumn(",
+						"          SOURCE_FILE_DIM_COLUMN = VARIETY",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectdimcolumnvalue",
+						"selectdimcolumnvalue aggregate(groupBy(SOURCE_FILE_DIM_COLUMN),",
+						"     count_source_file_dim_column = count(SOURCE_FILE_DIM_COLUMN)) ~> aggregatefinduniquesourcevalues",
+						"aggregatefinduniquesourcevalues, sourcedimlookup lookup(SOURCE_FILE_DIM_COLUMN == DIM_LOOKUP_VALUE,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookupdimtable",
+						"lookupdimtable filter(isNull(DIM_LOOKUP_VALUE)) ~> filternewsourcevalues",
+						"filternewsourcevalues, sourcegetmaxskvalue join(! (isNull(SOURCE_FILE_DIM_COLUMN) && isNull(MAX_SURROGATE_KEY_ID)),",
+						"     joinType:'cross',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinmaxsurrogatekey",
+						"joinmaxsurrogatekey select(mapColumn(",
+						"          SOURCE_FILE_DIM_COLUMN,",
+						"          MAX_SURROGATE_KEY_ID",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectmapdimcolumns",
+						"selectmapdimcolumns keyGenerate(output(SURROGATE_KEY_ID as long),",
+						"     startAt: 1L,",
+						"     stepValue: 1L) ~> surrogateKeygeeratenewId",
+						"surrogateKeygeeratenewId derive(NEW_SURROGATE_KEY = MAX_SURROGATE_KEY_ID + SURROGATE_KEY_ID,",
+						"          DWH_CREATED_DATE = currentDate(),",
+						"          DWH_UPDATED_DATE = currentDate()) ~> derivedColumnnewkeyandauditcolumns",
+						"derivedColumnnewkeyandauditcolumns sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          VARIETY as string,",
+						"          VARIETY_ID as integer,",
+						"          DWH_CREATED_DATE as timestamp,",
+						"          DWH_UPDATED_DATE as timestamp",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          VARIETY = SOURCE_FILE_DIM_COLUMN,",
+						"          VARIETY_ID = NEW_SURROGATE_KEY,",
+						"          DWH_CREATED_DATE,",
+						"          DWH_UPDATED_DATE",
+						"     )) ~> sinkdimensiontables"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_load_reporting_dim_table')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "DF_load_reporting_dim_state_table",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_load_reporting_dim_state_table",
+								"type": "DataFlowReference",
+								"parameters": {
+									"dfl_prm_reporting_schema_name": "'REPORTING'",
+									"dfl_prm_reporting_table_name": " 'DIM_STATE'",
+									"dfl_prm_reporting_lookup_column_name": " 'STATE_NAME'",
+									"dfl_prm_reporting_table_id_column": "'STATE_ID'"
+								},
+								"datasetParameters": {
+									"sourcereaddailypricingdata": {
+										"dst_prm_landing_container_name": "landing",
+										"dst_prm_landing_folder_name": "daily-pricing",
+										"dst_prm_landing_file_name": "PW_MW_DR_01012023.csv"
+									},
+									"sourcedimlookup": {},
+									"sourcegetmaxskvalue": {},
+									"sinkdimensiontables": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Transform"
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-01-24T14:53:51Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/DF_load_reporting_dim_state_table')]"
+			]
+		}
+	]
+}

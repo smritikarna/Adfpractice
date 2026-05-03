@@ -1,0 +1,173 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "ADF-San-DEV"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_container_name": {
+			"type": "string",
+			"defaultValue": "landing"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_folder_name": {
+			"type": "string",
+			"defaultValue": "/labs/lab3/"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_file_name": {
+			"type": "string",
+			"defaultValue": "PW_MW_DR_"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_folder_name": {
+			"type": "string",
+			"defaultValue": "/labs/lab3/"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_file_name": {
+			"type": "string",
+			"defaultValue": "PW_MW_DR_"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_file_date": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowStartTime"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_file_type": {
+			"type": "string",
+			"defaultValue": ".csv"
+		},
+		"TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_file_type": {
+			"type": "string",
+			"defaultValue": ".csv"
+		},
+		"TW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_source_file_date": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowStartTime"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_load_reporting_dim_table_lab4')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "DF_load_reporting_dim_state_lab4",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_load_reporting_dim_state",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourcereaddailypricing": {},
+									"sourcedimstatelookup": {},
+									"sourcemaxstateid": {},
+									"sinkdimstate": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Working-Labs"
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-01-10T18:07:43Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TUMW_TRG_DAILY_PRICING_LOAD')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipeline": {
+					"pipelineReference": {
+						"referenceName": "PL_ingest_daily_pricing_data_lab3a",
+						"type": "PipelineReference"
+					},
+					"parameters": {
+						"pln_prm_sink_container_name": "[parameters('TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_container_name')]",
+						"pln_prm_sink_folder_name": "[parameters('TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_folder_name')]",
+						"pln_prm_sink_file_name": "[parameters('TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_file_name')]",
+						"pln_prm_Relative_URL_folder_name": "[parameters('TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_folder_name')]",
+						"pln_prm_Relative_URL_file_name": "[parameters('TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_file_name')]",
+						"pln_prm_Relative_URL_file_date": "[parameters('TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_file_date')]",
+						"pln_prm_Relative_URL_file_type": "[parameters('TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_Relative_URL_file_type')]",
+						"pln_prm_sink_file_type": "[parameters('TUMW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_sink_file_type')]"
+					}
+				},
+				"type": "TumblingWindowTrigger",
+				"typeProperties": {
+					"frequency": "Hour",
+					"interval": 24,
+					"startTime": "2023-01-01T00:00:00Z",
+					"endTime": "2023-01-03T00:00:00Z",
+					"delay": "00:00:00",
+					"maxConcurrency": 1,
+					"retryPolicy": {
+						"intervalInSeconds": 30
+					},
+					"dependsOn": []
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TW_TRG_DAILY_PRICING_LOAD')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipeline": {
+					"pipelineReference": {
+						"referenceName": "PL_ingest_daily_pricing_data",
+						"type": "PipelineReference"
+					},
+					"parameters": {
+						"pln_prm_source_file_date": "[parameters('TW_TRG_DAILY_PRICING_LOAD_properties_pipeline_parameters_pln_prm_source_file_date')]"
+					}
+				},
+				"type": "TumblingWindowTrigger",
+				"typeProperties": {
+					"frequency": "Hour",
+					"interval": 24,
+					"startTime": "2023-01-01T00:00:00Z",
+					"endTime": "2023-01-10T00:00:00Z",
+					"delay": "00:00:00",
+					"maxConcurrency": 2,
+					"retryPolicy": {
+						"intervalInSeconds": 30
+					},
+					"dependsOn": []
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}
