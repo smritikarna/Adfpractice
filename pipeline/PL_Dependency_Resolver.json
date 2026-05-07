@@ -1,0 +1,87 @@
+{
+	"name": "PL_Dependency_Resolver",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup_Evaluate_Dependencies",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "@concat('DECLARE @SafeToRun BIT; EXEC [dbo].[sp_EvaluateDependencies] @WorkflowName = ''', pipeline().parameters.successor_workflow_name, ''', @CanRun = @SafeToRun OUTPUT; SELECT @SafeToRun AS CanRun')",
+							"type": "Expression"
+						},
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DS_AzureSQ",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "If_Dependencies_Met",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Lookup_Evaluate_Dependencies",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(activity('Lookup_Evaluate_Dependencies').output.firstRow.CanRun, true)",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "Web_Trigger_Adf_Pipeline",
+							"type": "WebActivity",
+							"dependsOn": [],
+							"policy": {
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"method": "POST",
+								"url": {
+									"value": "@concat('https://management.azure.com/subscriptions/', pipeline().DataFactory, '/resourceGroups/', pipeline().DataFactory, '/providers/Microsoft.DataFactory/factories/', pipeline().DataFactory, '/pipelines/PL_Databricks_Main_Orchestrator/createRun?api-version=2018-06-01')",
+									"type": "Expression"
+								},
+								"body": {
+									"value": "@json(concat('{\"workflow_name\": \"', pipeline().parameters.successor_workflow_name, '\"}'))",
+									"type": "Expression"
+								},
+								"authentication": {
+									"type": "MSI",
+									"resource": "https://management.azure.com/"
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"successor_workflow_name": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}

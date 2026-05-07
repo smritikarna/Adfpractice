@@ -1,0 +1,335 @@
+{
+	"name": "PL_Databricks_Main_Orchestrator",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup_Metadata",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "@concat('SELECT * FROM WorkflowControl WHERE WorkflowName = ''', pipeline().parameters.workflow_name, '''')",
+							"type": "Expression"
+						},
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DS_AzureSQ",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "SP_Mark_Started",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Lookup_Metadata",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[sp_UpdateWorkflowState]",
+					"storedProcedureParameters": {
+						"WorkflowName": {
+							"value": {
+								"value": "@pipeline().parameters.workflow_name",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ExecutionState": {
+							"value": "Started",
+							"type": "String"
+						},
+						"AdfRunId": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_REPORTING_DB",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Web_Resolve_JobId",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "SP_Mark_Started",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": {
+						"value": "@concat(activity('Lookup_Metadata').output.firstRow.WorkspaceUrl, '/api/2.1/jobs/list?name=', pipeline().parameters.workflow_name)",
+						"type": "Expression"
+					},
+					"authentication": {
+						"type": "MSI",
+						"resource": "2ff814a6-3304-4ab8-85cb-cd0e6f879c1d"
+					}
+				}
+			},
+			{
+				"name": "Web_Trigger_Job",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Web_Resolve_JobId",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"url": {
+						"value": "@concat(activity('Lookup_Metadata').output.firstRow.WorkspaceUrl, '/api/2.1/jobs/run-now')",
+						"type": "Expression"
+					},
+					"body": {
+						"value": "@json(concat('{\"job_id\": ', activity('Web_Resolve_JobId').output.jobs[0].job_id, '}'))",
+						"type": "Expression"
+					},
+					"authentication": {
+						"type": "MSI",
+						"resource": "2ff814a6-3304-4ab8-85cb-cd0e6f879c1d"
+					}
+				}
+			},
+			{
+				"name": "SP_Mark_Running",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Web_Trigger_Job",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[sp_UpdateWorkflowState]",
+					"storedProcedureParameters": {
+						"WorkflowName": {
+							"value": {
+								"value": "@pipeline().parameters.workflow_name",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ExecutionState": {
+							"value": "Running",
+							"type": "String"
+						},
+						"DatabricksRunId": {
+							"value": {
+								"value": "@activity('Web_Trigger_Job').output.run_id",
+								"type": "Expression"
+							},
+							"type": "Int64"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_REPORTING_DB",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Poll_Until_Completion",
+				"type": "Until",
+				"dependsOn": [
+					{
+						"activity": "SP_Mark_Running",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@or(equals(activity('Web_Check_Run_Status').output.state.life_cycle_state, 'TERMINATED'), equals(activity('Web_Check_Run_Status').output.state.life_cycle_state, 'SKIPPED'))",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Wait_30_Secs",
+							"type": "Wait",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": 30
+							}
+						},
+						{
+							"name": "Web_Check_Run_Status",
+							"type": "WebActivity",
+							"dependsOn": [
+								{
+									"activity": "Wait_30_Secs",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"method": "GET",
+								"url": {
+									"value": "@concat(activity('Lookup_Metadata').output.firstRow.WorkspaceUrl, '/api/2.1/jobs/runs/get?run_id=', activity('Web_Trigger_Job').output.run_id)",
+									"type": "Expression"
+								},
+								"authentication": {
+									"type": "MSI",
+									"resource": "2ff814a6-3304-4ab8-85cb-cd0e6f879c1d"
+								}
+							}
+						}
+					],
+					"timeout": "1.00:00:00"
+				}
+			},
+			{
+				"name": "SP_Mark_Final_State",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Poll_Until_Completion",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[sp_UpdateWorkflowState]",
+					"storedProcedureParameters": {
+						"WorkflowName": {
+							"value": {
+								"value": "@pipeline().parameters.workflow_name",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ExecutionState": {
+							"value": {
+								"value": "@if(equals(activity('Poll_Until_Completion').output.state.result_state, 'SUCCESS'), 'Success', 'Failed')",
+								"type": "Expression"
+							},
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_REPORTING_DB",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "If_Trigger_Successor",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "SP_Mark_Final_State",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@and(equals(activity('Lookup_Metadata').output.firstRow.TriggerSuccessor, true), equals(activity('Poll_Until_Completion').output.state.result_state, 'SUCCESS'))",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "Invoke_Dependency_Resolver",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "PL_Dependency_Resolver",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": false
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"workflow_name": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}

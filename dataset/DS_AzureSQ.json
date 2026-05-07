@@ -1,0 +1,66 @@
+{
+	"name": "DS_AzureSQ",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ASQL_REPORTING_DB",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "WorkflowName",
+				"type": "varchar"
+			},
+			{
+				"name": "WorkspaceUrl",
+				"type": "varchar"
+			},
+			{
+				"name": "DatabricksTokenSecretName",
+				"type": "varchar"
+			},
+			{
+				"name": "PredecessorWorkflowName",
+				"type": "varchar"
+			},
+			{
+				"name": "SuccessorWorkflowName",
+				"type": "varchar"
+			},
+			{
+				"name": "TriggerSuccessor",
+				"type": "bit"
+			},
+			{
+				"name": "LastAdfRunId",
+				"type": "varchar"
+			},
+			{
+				"name": "LastDatabricksRunId",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "ExecutionState",
+				"type": "varchar"
+			},
+			{
+				"name": "LastRunStartTime",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "LastRunEndTime",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "WorkflowControl"
+		}
+	}
+}
